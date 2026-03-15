@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture - terraform-gcp-gcs-bucket</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b0c0b;color:#f5f2eb;font-family:'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;line-height:1.6;padding:0}
+a{color:#c8420a;text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1200px;margin:0 auto;padding:2rem}
+.badge-bar{background:#111;border-bottom:2px solid #c8420a;padding:0.75rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.badge-bar img{height:28px}
+.badge-bar span{font-size:0.85rem;color:#aaa}
+h1{font-size:2rem;color:#c8420a;margin:1.5rem 0 0.5rem;border-bottom:1px solid #222;padding-bottom:0.5rem}
+h2{font-size:1.4rem;color:#c8420a;margin:2rem 0 1rem;border-bottom:1px solid #1a1a1a;padding-bottom:0.4rem}
+h3{font-size:1.1rem;color:#e8e0d4;margin:1.2rem 0 0.6rem}
+p,li{font-size:0.95rem;color:#ccc}
+ul{padding-left:1.5rem;margin:0.5rem 0}
+li{margin:0.3rem 0}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1rem 0}
+.card{background:#141514;border:1px solid #222;border-radius:8px;padding:1.2rem;transition:border-color 0.2s}.card:hover{border-color:#c8420a}
+.card h3{margin:0 0 0.5rem;font-size:1rem;color:#c8420a}
+.card p{font-size:0.85rem;color:#aaa;margin:0}
+.arch-diagram{background:#111;border:1px solid #222;border-radius:8px;padding:2rem;margin:1.5rem 0;overflow-x:auto}
+.flow{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:0.5rem}
+.flow-box{background:#1a1b1a;border:2px solid #333;border-radius:6px;padding:0.8rem 1.2rem;text-align:center;font-size:0.85rem;min-width:130px}
+.flow-box.accent{border-color:#c8420a;color:#c8420a;font-weight:bold}
+.flow-box.green{border-color:#34a853;color:#34a853}
+.flow-box.blue{border-color:#4285f4;color:#4285f4}
+.flow-box.purple{border-color:#9c27b0;color:#9c27b0}
+.flow-box.yellow{border-color:#fbbc04;color:#fbbc04}
+.flow-arrow{color:#555;font-size:1.5rem;display:flex;align-items:center;padding:0 0.2rem}
+.flow-col{display:flex;flex-direction:column;gap:0.5rem;align-items:center}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem}
+th{background:#1a1b1a;color:#c8420a;padding:0.6rem 0.8rem;text-align:left;border:1px solid #222}
+td{padding:0.6rem 0.8rem;border:1px solid #222;color:#ccc}
+tr:nth-child(even){background:#111}
+code{background:#1a1b1a;padding:0.15rem 0.4rem;border-radius:3px;font-size:0.85rem;color:#e8e0d4}
+pre{background:#111;border:1px solid #222;border-radius:6px;padding:1rem;overflow-x:auto;margin:1rem 0}
+pre code{background:none;padding:0}
+.checklist{list-style:none;padding-left:0}
+.checklist li{padding:0.4rem 0;padding-left:1.8rem;position:relative}
+.checklist li::before{content:'[ ]';position:absolute;left:0;color:#c8420a;font-weight:bold}
+.section{margin:2rem 0}
+.footer{border-top:1px solid #222;margin-top:3rem;padding-top:1rem;text-align:center;font-size:0.8rem;color:#555}
+.exec-summary{background:#141514;border-left:4px solid #c8420a;padding:1.2rem 1.5rem;margin:1rem 0;border-radius:0 6px 6px 0}
+.exec-summary p{color:#ccc;font-size:0.95rem}
+</style>
+</head>
+<body>
+<div class="badge-bar">
+<img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=flat&logo=googlecloud&logoColor=white" alt="GCP">
+<img src="https://img.shields.io/badge/Terraform-7B42BC?style=flat&logo=terraform&logoColor=white" alt="Terraform">
+<span>terraform-gcp-gcs-bucket</span>
+<span style="margin-left:auto;color:#555">Architecture Document</span>
+</div>
+<div class="container">
+
+<h1>GCS Bucket Module</h1>
+
+<div class="section">
+<h2>Executive Summary</h2>
+<div class="exec-summary">
+<p>A production-ready Terraform module for provisioning Google Cloud Storage buckets with comprehensive data management capabilities. Supports four storage classes (STANDARD, NEARLINE, COLDLINE, ARCHIVE) with Autoclass for automatic transitions, lifecycle rules with all condition types, object versioning, retention policies with irreversible locking, CORS configuration, CMEK encryption via Cloud KMS, uniform bucket-level access with public access prevention, Pub/Sub event notifications, access logging, static website hosting, custom dual-region placement, soft delete policies, and granular IAM bindings.</p>
+</div>
+</div>
+
+<div class="section">
+<h2>Overview</h2>
+<div class="card-grid">
+<div class="card"><h3>Provider</h3><p>google-beta >= 5.0</p></div>
+<div class="card"><h3>Terraform</h3><p>>= 1.3</p></div>
+<div class="card"><h3>Resources</h3><p>3 (Bucket, IAM, Notifications)</p></div>
+<div class="card"><h3>Storage Classes</h3><p>STANDARD, NEARLINE, COLDLINE, ARCHIVE</p></div>
+<div class="card"><h3>Locations</h3><p>Region, Dual-Region, Multi-Region</p></div>
+<div class="card"><h3>Encryption</h3><p>CMEK via Cloud KMS</p></div>
+</div>
+</div>
+
+<div class="section">
+<h2>Architecture Diagram</h2>
+<div class="arch-diagram">
+<div class="flow">
+<div class="flow-col">
+<div class="flow-box accent">Terraform Module</div>
+</div>
+<div class="flow-arrow">&#9654;</div>
+<div class="flow-col">
+<div class="flow-box green">GCS Bucket</div>
+</div>
+<div class="flow-arrow">&#9654;</div>
+<div class="flow-col">
+<div class="flow-box yellow">Storage Config</div>
+<div class="flow-box blue">Security</div>
+<div class="flow-box purple">Data Management</div>
+<div class="flow-box green">Integrations</div>
+</div>
+</div>
+<br>
+<div class="flow">
+<div class="flow-col">
+<div class="flow-box yellow">Storage Config</div>
+</div>
+<div class="flow-arrow">&#9654;</div>
+<div class="flow-col">
+<div class="flow-box">Storage Class</div>
+<div class="flow-box">Location</div>
+<div class="flow-box">Autoclass</div>
+<div class="flow-box">Dual-Region</div>
+</div>
+</div>
+<br>
+<div class="flow">
+<div class="flow-col">
+<div class="flow-box blue">Security</div>
+</div>
+<div class="flow-arrow">&#9654;</div>
+<div class="flow-col">
+<div class="flow-box">Uniform Access</div>
+<div class="flow-box">CMEK Encryption</div>
+<div class="flow-box">Public Access Prevention</div>
+<div class="flow-box">IAM Bindings</div>
+</div>
+</div>
+<br>
+<div class="flow">
+<div class="flow-col">
+<div class="flow-box purple">Data Management</div>
+</div>
+<div class="flow-arrow">&#9654;</div>
+<div class="flow-col">
+<div class="flow-box">Lifecycle Rules</div>
+<div class="flow-box">Versioning</div>
+<div class="flow-box">Retention Policy</div>
+<div class="flow-box">Soft Delete</div>
+</div>
+<div class="flow-arrow" style="margin-left:2rem">|</div>
+<div class="flow-col">
+<div class="flow-box green">Pub/Sub Notifications</div>
+<div class="flow-box green">Access Logging</div>
+<div class="flow-box green">Static Website</div>
+<div class="flow-box green">CORS Config</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Component Breakdown</h2>
+<h3>google_storage_bucket.this</h3>
+<p>Core bucket resource with storage class, location (region/dual-region/multi-region), uniform bucket-level access, public access prevention (enforced/inherited), requester pays, event-based holds, versioning, and Autoclass for automatic storage class transitions.</p>
+<h3>Lifecycle Rules</h3>
+<p>Comprehensive lifecycle management with Delete, SetStorageClass, and AbortIncompleteMultipartUpload actions. Conditions include age, created_before, with_state, matches_storage_class/prefix/suffix, num_newer_versions, days_since_noncurrent_time, and custom time conditions.</p>
+<h3>google_storage_bucket_iam_member.bindings</h3>
+<p>Flattened IAM bindings for role-based access (objectViewer, objectCreator, objectAdmin, etc.) using for_each over role-member pairs.</p>
+<h3>google_storage_notification.notifications</h3>
+<p>Pub/Sub notifications for object events (FINALIZE, METADATA_UPDATE, DELETE, ARCHIVE) with object name prefix filtering and custom attributes.</p>
+</div>
+
+<div class="section">
+<h2>Data Flow</h2>
+<ul>
+<li><strong>Upload:</strong> Objects are written to the bucket via gsutil, client libraries, or Transfer Service. CMEK encryption is applied at rest.</li>
+<li><strong>Lifecycle:</strong> Objects transition through storage classes (STANDARD to NEARLINE to COLDLINE to ARCHIVE) based on age or access patterns (Autoclass).</li>
+<li><strong>Versioning:</strong> When enabled, each object modification creates a new version. Noncurrent versions are managed by lifecycle rules.</li>
+<li><strong>Notifications:</strong> Object events trigger Pub/Sub messages for downstream processing (Cloud Functions, Cloud Run, Dataflow).</li>
+<li><strong>Retention:</strong> Objects are locked for the retention period. Locked policies are irreversible.</li>
+<li><strong>Soft Delete:</strong> Deleted objects are recoverable within the soft delete retention window.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Security Controls</h2>
+<table>
+<tr><th>Control</th><th>Implementation</th></tr>
+<tr><td>Encryption at Rest</td><td>CMEK via <code>encryption.default_kms_key_name</code>; falls back to Google-managed keys</td></tr>
+<tr><td>Uniform Access</td><td><code>uniform_bucket_level_access = true</code> disables ACLs for IAM-only access</td></tr>
+<tr><td>Public Prevention</td><td><code>public_access_prevention = "enforced"</code> blocks all public access</td></tr>
+<tr><td>IAM Bindings</td><td>Role-based access per bucket (objectViewer, objectCreator, admin)</td></tr>
+<tr><td>Retention Lock</td><td>Irreversible retention policy prevents deletion during retention period</td></tr>
+<tr><td>Soft Delete</td><td>Configurable recovery window for accidentally deleted objects</td></tr>
+<tr><td>Access Logging</td><td>Bucket access logs written to a separate log bucket</td></tr>
+<tr><td>CORS</td><td>Origin, method, header, and max-age controls for browser-based access</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>Industry Adaptation</h2>
+<ul>
+<li><strong>Financial Services:</strong> Locked retention policies for regulatory compliance, CMEK encryption, uniform access, audit logging, soft delete for data recovery.</li>
+<li><strong>Healthcare:</strong> HIPAA-compliant configuration with public access prevention, CMEK, access logging, lifecycle rules for PHI data retention.</li>
+<li><strong>Media / CDN:</strong> Static website hosting with CORS, multi-region buckets for low-latency global delivery, Pub/Sub notifications for transcoding pipelines.</li>
+<li><strong>Data Lake:</strong> Autoclass for cost optimization, lifecycle rules for tiered archival, versioning for data lineage, Pub/Sub for event-driven ETL.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Production Readiness Checklist</h2>
+<ul class="checklist">
+<li>Enable <code>uniform_bucket_level_access = true</code> (default)</li>
+<li>Set <code>public_access_prevention = "enforced"</code> (default)</li>
+<li>Enable CMEK encryption with a dedicated Cloud KMS key</li>
+<li>Configure lifecycle rules for storage class transitions and object deletion</li>
+<li>Enable versioning for data protection</li>
+<li>Set <code>force_destroy = false</code> (default) to prevent accidental data loss</li>
+<li>Configure access logging to a separate bucket</li>
+<li>Set retention policy for compliance-critical data</li>
+<li>Enable soft delete with appropriate retention duration</li>
+<li>Configure Pub/Sub notifications for event-driven workflows</li>
+<li>Assign least-privilege IAM bindings</li>
+<li>Apply labels for cost tracking and resource organization</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Configuration Reference</h2>
+<h3>Required Variables</h3>
+<table>
+<tr><th>Name</th><th>Type</th><th>Description</th></tr>
+<tr><td><code>project_id</code></td><td>string</td><td>GCP project ID</td></tr>
+<tr><td><code>name</code></td><td>string</td><td>Globally unique bucket name (3-222 chars)</td></tr>
+</table>
+<h3>Key Optional Variables</h3>
+<table>
+<tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td><code>location</code></td><td>string</td><td>US</td><td>Bucket location</td></tr>
+<tr><td><code>storage_class</code></td><td>string</td><td>STANDARD</td><td>Storage class</td></tr>
+<tr><td><code>versioning_enabled</code></td><td>bool</td><td>false</td><td>Enable versioning</td></tr>
+<tr><td><code>lifecycle_rules</code></td><td>list(object)</td><td>[]</td><td>Lifecycle rule definitions</td></tr>
+<tr><td><code>encryption</code></td><td>object</td><td>null</td><td>CMEK encryption config</td></tr>
+<tr><td><code>retention_policy</code></td><td>object</td><td>null</td><td>Retention policy config</td></tr>
+<tr><td><code>iam_bindings</code></td><td>map(list(string))</td><td>{}</td><td>IAM role bindings</td></tr>
+<tr><td><code>notifications</code></td><td>list(object)</td><td>[]</td><td>Pub/Sub notification configs</td></tr>
+</table>
+<h3>Outputs</h3>
+<table>
+<tr><th>Name</th><th>Description</th></tr>
+<tr><td><code>bucket_name</code></td><td>The bucket name</td></tr>
+<tr><td><code>bucket_url</code></td><td>The bucket URL (gs://...)</td></tr>
+<tr><td><code>bucket_self_link</code></td><td>Bucket self link</td></tr>
+<tr><td><code>bucket_storage_class</code></td><td>Storage class</td></tr>
+<tr><td><code>gcs_service_account</code></td><td>GCS service account email</td></tr>
+<tr><td><code>notification_ids</code></td><td>List of notification IDs</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>Deployment</h2>
+<pre><code>module "bucket" {
+  source = "github.com/kogunlowo123/terraform-gcp-gcs-bucket"
+
+  project_id         = "my-project"
+  name               = "my-project-data-lake"
+  location           = "us-central1"
+  storage_class      = "STANDARD"
+  versioning_enabled = true
+
+  encryption = {
+    default_kms_key_name = "projects/my-project/locations/us-central1/keyRings/ring/cryptoKeys/key"
+  }
+
+  lifecycle_rules = [
+    {
+      action    = { type = "SetStorageClass", storage_class = "NEARLINE" }
+      condition = { age = 30 }
+    },
+    {
+      action    = { type = "SetStorageClass", storage_class = "COLDLINE" }
+      condition = { age = 90 }
+    },
+    {
+      action    = { type = "Delete" }
+      condition = { age = 365 }
+    }
+  ]
+
+  soft_delete_policy = { retention_duration_seconds = 604800 }
+
+  notifications = [
+    {
+      topic        = "projects/my-project/topics/gcs-events"
+      event_types  = ["OBJECT_FINALIZE"]
+    }
+  ]
+
+  iam_bindings = {
+    "roles/storage.objectViewer" = ["serviceAccount:reader@my-project.iam.gserviceaccount.com"]
+    "roles/storage.objectAdmin"  = ["serviceAccount:writer@my-project.iam.gserviceaccount.com"]
+  }
+
+  labels = { team = "data", env = "production" }
+}</code></pre>
+</div>
+
+<div class="section">
+<h2>Links</h2>
+<ul>
+<li><a href="https://cloud.google.com/storage/docs">Cloud Storage Documentation</a></li>
+<li><a href="https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket">Terraform google_storage_bucket</a></li>
+<li><a href="https://cloud.google.com/storage/docs/lifecycle">Object Lifecycle Management</a></li>
+<li><a href="https://cloud.google.com/storage/docs/encryption/customer-managed-keys">CMEK Encryption</a></li>
+<li><a href="../README.md">Module README</a></li>
+</ul>
+</div>
+
+<div class="footer">
+<p>terraform-gcp-gcs-bucket &middot; Architecture Document &middot; Generated 2026-03-15</p>
+<p style="color:#333;margin-top:0.3rem">Built for Google Cloud Platform</p>
+</div>
+</div>
+</body>
+</html>
