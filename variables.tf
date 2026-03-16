@@ -9,7 +9,7 @@ variable "project_id" {
 }
 
 variable "name" {
-  description = "The name of the bucket. Must be globally unique."
+  description = "The name of the bucket, must be globally unique."
   type        = string
 
   validation {
@@ -25,7 +25,7 @@ variable "location" {
 }
 
 variable "storage_class" {
-  description = "The storage class of the bucket. Supported values: STANDARD, NEARLINE, COLDLINE, ARCHIVE."
+  description = "The storage class of the bucket (STANDARD, NEARLINE, COLDLINE, ARCHIVE)."
   type        = string
   default     = "STANDARD"
 
@@ -42,13 +42,13 @@ variable "force_destroy" {
 }
 
 variable "uniform_bucket_level_access" {
-  description = "Enable uniform bucket-level access (disables ACLs). Recommended for production."
+  description = "Enable uniform bucket-level access (disables ACLs)."
   type        = bool
   default     = true
 }
 
 variable "public_access_prevention" {
-  description = "Public access prevention. Set to 'enforced' to prevent public access."
+  description = "Public access prevention, set to 'enforced' to prevent public access."
   type        = string
   default     = "enforced"
 
@@ -83,11 +83,7 @@ variable "default_event_based_hold" {
 }
 
 variable "retention_policy" {
-  description = <<-EOT
-    Retention policy configuration:
-    - retention_period: Minimum retention period in seconds for objects.
-    - is_locked: If true, the retention policy cannot be removed or shortened. IRREVERSIBLE.
-  EOT
+  description = "Retention policy with retention_period (seconds) and is_locked flag."
   type = object({
     retention_period = number
     is_locked        = optional(bool, false)
@@ -101,11 +97,7 @@ variable "retention_policy" {
 }
 
 variable "lifecycle_rules" {
-  description = <<-EOT
-    List of lifecycle rules. Each rule contains:
-    - action: Object with type (Delete, SetStorageClass, AbortIncompleteMultipartUpload) and optional storage_class.
-    - condition: Object with optional age, created_before, with_state, matches_storage_class, matches_prefix, matches_suffix, num_newer_versions, days_since_noncurrent_time, noncurrent_time_before, days_since_custom_time, custom_time_before, send_days_since_noncurrent_time_if_zero, send_days_since_custom_time_if_zero, send_num_newer_versions_if_zero.
-  EOT
+  description = "List of lifecycle rules with action and condition blocks."
   type = list(object({
     action = object({
       type          = string
@@ -132,13 +124,7 @@ variable "lifecycle_rules" {
 }
 
 variable "cors" {
-  description = <<-EOT
-    List of CORS configurations. Each entry contains:
-    - origin: List of origins (e.g., ["https://example.com"])
-    - method: List of HTTP methods (e.g., ["GET", "POST"])
-    - response_header: List of response headers
-    - max_age_seconds: Max age in seconds for preflight cache
-  EOT
+  description = "List of CORS configurations with origin, method, response_header, and max_age_seconds."
   type = list(object({
     origin          = optional(list(string), [])
     method          = optional(list(string), [])
@@ -149,10 +135,7 @@ variable "cors" {
 }
 
 variable "encryption" {
-  description = <<-EOT
-    Encryption configuration:
-    - default_kms_key_name: Cloud KMS key name for default object encryption (CMEK).
-  EOT
+  description = "Encryption configuration with default_kms_key_name for CMEK."
   type = object({
     default_kms_key_name = string
   })
@@ -160,11 +143,7 @@ variable "encryption" {
 }
 
 variable "logging" {
-  description = <<-EOT
-    Access logging configuration:
-    - log_bucket: The bucket to receive access logs.
-    - log_object_prefix: Prefix for log object names.
-  EOT
+  description = "Access logging configuration with log_bucket and log_object_prefix."
   type = object({
     log_bucket        = string
     log_object_prefix = optional(string, "")
@@ -173,11 +152,7 @@ variable "logging" {
 }
 
 variable "website" {
-  description = <<-EOT
-    Static website hosting configuration:
-    - main_page_suffix: The main page suffix (e.g., "index.html").
-    - not_found_page: The custom 404 page (e.g., "404.html").
-  EOT
+  description = "Static website hosting configuration with main_page_suffix and not_found_page."
   type = object({
     main_page_suffix = optional(string)
     not_found_page   = optional(string)
@@ -186,10 +161,7 @@ variable "website" {
 }
 
 variable "custom_placement_config" {
-  description = <<-EOT
-    Custom dual-region placement configuration:
-    - data_locations: List of two regions for dual-region placement.
-  EOT
+  description = "Custom dual-region placement configuration with data_locations list."
   type = object({
     data_locations = list(string)
   })
@@ -197,11 +169,7 @@ variable "custom_placement_config" {
 }
 
 variable "autoclass" {
-  description = <<-EOT
-    Autoclass configuration:
-    - enabled: Enable Autoclass for automatic storage class transitions.
-    - terminal_storage_class: Terminal storage class (NEARLINE or ARCHIVE).
-  EOT
+  description = "Autoclass configuration with enabled flag and terminal_storage_class."
   type = object({
     enabled                = bool
     terminal_storage_class = optional(string)
@@ -210,10 +178,7 @@ variable "autoclass" {
 }
 
 variable "soft_delete_policy" {
-  description = <<-EOT
-    Soft delete policy configuration:
-    - retention_duration_seconds: Duration to retain soft-deleted objects (0 to disable, 604800 to 7776000).
-  EOT
+  description = "Soft delete policy with retention_duration_seconds."
   type = object({
     retention_duration_seconds = number
   })
@@ -221,23 +186,13 @@ variable "soft_delete_policy" {
 }
 
 variable "iam_bindings" {
-  description = <<-EOT
-    IAM bindings for the bucket. Map of role => list of members.
-    Example: { "roles/storage.objectViewer" = ["user:dev@example.com"] }
-  EOT
-  type    = map(list(string))
-  default = {}
+  description = "IAM bindings for the bucket as a map of role to list of members."
+  type        = map(list(string))
+  default     = {}
 }
 
 variable "notifications" {
-  description = <<-EOT
-    List of Pub/Sub notification configurations. Each contains:
-    - topic: The Pub/Sub topic name (full resource name).
-    - payload_format: JSON_API_V1 or NONE.
-    - event_types: List of event types (OBJECT_FINALIZE, OBJECT_METADATA_UPDATE, OBJECT_DELETE, OBJECT_ARCHIVE).
-    - object_name_prefix: Filter by object name prefix.
-    - custom_attributes: Map of custom attributes to include in the notification.
-  EOT
+  description = "List of Pub/Sub notification configurations with topic, payload_format, and event_types."
   type = list(object({
     topic              = string
     payload_format     = optional(string, "JSON_API_V1")

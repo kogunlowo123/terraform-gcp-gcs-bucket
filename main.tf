@@ -13,7 +13,7 @@ resource "google_storage_bucket" "this" {
   public_access_prevention    = var.public_access_prevention
   requester_pays              = var.requester_pays
   default_event_based_hold    = var.default_event_based_hold
-  labels                      = local.merged_labels
+  labels                      = var.labels
 
   versioning {
     enabled = var.versioning_enabled
@@ -123,8 +123,14 @@ resource "google_storage_bucket" "this" {
 ###############################################################################
 resource "google_storage_bucket_iam_member" "bindings" {
   for_each = {
-    for binding in local.iam_bindings_flat :
-    "${binding.role}-${binding.member}" => binding
+    for binding in flatten([
+      for role, members in var.iam_bindings : [
+        for member in members : {
+          role   = role
+          member = member
+        }
+      ]
+    ]) : "${binding.role}-${binding.member}" => binding
   }
 
   bucket = google_storage_bucket.this.name
