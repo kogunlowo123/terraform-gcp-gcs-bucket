@@ -27,7 +27,7 @@ module "test" {
     },
     {
       action = {
-        type = "SetStorageClass"
+        type          = "SetStorageClass"
         storage_class = "COLDLINE"
       }
       condition = {
